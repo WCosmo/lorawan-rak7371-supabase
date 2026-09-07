@@ -133,7 +133,7 @@ pip install -r requirements.txt
 python bridge.py
 ```
 
-A partir de agora, todo uplink do seu sensor será inserido automaticamente no Supabase! 🎉
+A partir de agora, todo uplink do seu sensor será inserido automaticamente no Supabase
 
 ---
 
