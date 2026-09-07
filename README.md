@@ -29,7 +29,7 @@ lorawan-rak7371-supabase/
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/SEU_USUARIO/lorawan-rak7371-supabase.git
+git clone https://github.com/WCosmo/lorawan-rak7371-supabase.git
 cd lorawan-rak7371-supabase
 ```
 
