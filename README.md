@@ -4,7 +4,7 @@ Projeto completo para rodar um gateway LoRaWAN **RAK7371** em Linux (Zorin/Ubunt
 
 ---
 
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 lorawan-rak7371-supabase/
