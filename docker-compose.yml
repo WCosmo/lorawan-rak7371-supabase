@@ -1,0 +1,108 @@
+version: "3.8"
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL - banco de dados do ChirpStack
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: chirpstack-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=chirpstack
+      - POSTGRES_USER=chirpstack
+      - POSTGRES_DB=chirpstack
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - lorawan-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chirpstack"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Redis - cache e sessões
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: chirpstack-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - lorawan-net
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Mosquitto - broker MQTT
+  # ---------------------------------------------------------------------------
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: chirpstack-mosquitto
+    restart: unless-stopped
+    volumes:
+      - ./chirpstack/configuration/mosquitto:/mosquitto/config
+    networks:
+      - lorawan-net
+    ports:
+      - "1883:1883"
+
+  # ---------------------------------------------------------------------------
+  # ChirpStack - Network Server
+  # ---------------------------------------------------------------------------
+  chirpstack:
+    image: chirpstack/chirpstack:4
+    container_name: chirpstack
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+    environment:
+      - MQTT_BROKER_HOST=mosquitto
+      - REDIS_HOST=redis:6379
+      - POSTGRESQL_HOST=postgres
+      - CHIRPSTACK_SECRET=${CHIRPSTACK_SECRET:-$(openssl rand -base64 32)}
+    volumes:
+      - ./chirpstack/configuration/chirpstack:/etc/chirpstack
+    networks:
+      - lorawan-net
+    ports:
+      - "8080:8080"
+    command: -c /etc/chirpstack/chirpstack.toml
+
+  # ---------------------------------------------------------------------------
+  # ChirpStack Gateway Bridge
+  # ---------------------------------------------------------------------------
+  chirpstack-gateway-bridge:
+    image: chirpstack/chirpstack-gateway-bridge:4
+    container_name: chirpstack-gateway-bridge
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    environment:
+      - INTEGRATION__MQTT__EVENT_TOPIC_TEMPLATE=au915_0/gateway/{{ .GatewayID }}/event/{{ .EventType }}
+      - INTEGRATION__MQTT__COMMAND_TOPIC_TEMPLATE=au915_0/gateway/{{ .GatewayID }}/command/#
+      - INTEGRATION__MQTT__SERVER=tcp://mosquitto:1883
+    networks:
+      - lorawan-net
+    ports:
+      - "1700:1700/udp"
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  lorawan-net:
+    driver: bridge

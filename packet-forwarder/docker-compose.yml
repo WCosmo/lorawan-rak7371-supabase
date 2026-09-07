@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  udp-packet-forwarder:
+    image: rakwireless/udp-packet-forwarder:latest
+    container_name: rak7371-gateway
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    environment:
+      MODEL: "RAK7371"
+      INTERFACE: "USB"
+      DEVICE: "AUTO"
+      GATEWAY_EUI: "${GATEWAY_EUI:-AUTO}"
+      SERVER_HOST: "127.0.0.1"
+      SERVER_PORT: "1700"
