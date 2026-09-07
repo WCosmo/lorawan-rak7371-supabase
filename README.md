@@ -10,7 +10,6 @@ Projeto completo para rodar um gateway LoRaWAN **RAK7371** em Linux (Zorin/Ubunt
 lorawan-rak7371-supabase/
 ├── docker-compose.yml              # ChirpStack + PostgreSQL + Redis + Mosquitto
 ├── .env.example                    # Template de variáveis (copie para .env)
-├── .gitignore
 ├── README.md
 ├── packet-forwarder/
 │   └── docker-compose.yml          # Packet Forwarder do RAK7371
@@ -18,8 +17,9 @@ lorawan-rak7371-supabase/
 │   └── configuration/chirpstack/
 │       └── chirpstack.toml         # Configuração AU915 (Brasil)
 └── bridge/
-    ├── bridge.py                   # Script Python: MQTT → Supabase
-    └── requirements.txt
+│   ├── bridge.py                   # Script Python: MQTT → Supabase
+│   └── requirements.txt
+└── tutorial_gateway_lorawan_armbian.pdf     # Tutorial de implementação no Armbian 
 ```
 
 ---
